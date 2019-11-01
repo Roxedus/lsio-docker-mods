@@ -1,5 +1,10 @@
 #!/usr/bin/with-contenv bash
 
+echo '-------------------------'
+echo '| Mod by Roxedus        |'
+echo '| Getting atest scripts |'
+echo '-------------------------'
+
 # Clone sickbeard_mp4_automator repo
 if [[ ! -d /SickBeard/.git ]]; then
   echo '-----------------------'
