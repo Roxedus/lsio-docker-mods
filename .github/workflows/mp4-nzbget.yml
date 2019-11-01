@@ -1,9 +1,9 @@
 name: Build Docker-mod for nzbget
 
-on:
-  push:
-    paths:
-    - 'sickbeard automator/nzbget/**'
+on: push
+  #push:
+  #  paths:
+  #  - 'sickbeard automator/nzbget/**'
 
 jobs:
 
