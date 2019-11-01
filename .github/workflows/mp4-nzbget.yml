@@ -1,0 +1,26 @@
+name: Build Docker-mod for nzbget
+
+on:
+  push:
+    paths:
+    - 'sickbeard automator/nzbget/**'
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+    
+    env:
+      TOKEN: ${{ secrets.docker_token }}
+      DOCKER_REPO: roxedus/lsio-docker-mods
+      APP: mp4-nzbget 
+
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: Build the Docker image
+      run: docker build ./sickbeard automator/nzbget/ --file Dockerfile --tag ${DOCKER_REPO}:${APP}-$(date +%s) --tag ${DOCKER_REPO}:${APP}-latest
+      
+    - name: Login to registry 
+      run: echo $TOKEN | docker login -u roxedus --password-stdin
