@@ -5,6 +5,7 @@ if [ ! -f /usr/bin/pip ]; then
   echo "Running installation of required modules for sickbeard_mp4_automator"
   apk add --no-cache \
     py2-pip \
+    git \
     ffmpeg
   pip install --no-cache-dir -U \
     requests-cache \
