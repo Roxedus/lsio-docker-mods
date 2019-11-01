@@ -1,19 +1,19 @@
 #!/usr/bin/with-contenv bash
 
 echo '-------------------------'
-echo '| Mod by Roxedus        |'
-echo '| Getting atest scripts |'
+echo '| Mod by Roxedus'
+echo '| Getting latest scripts'
 echo '-------------------------'
 
 # Clone sickbeard_mp4_automator repo
 if [[ ! -d /SickBeard/.git ]]; then
   echo '-----------------------'
-  echo '| Downloading Scripts  |'
+  echo '| Downloading Scripts'
   echo '-----------------------'
   git clone https://github.com/mdhiggins/sickbeard_mp4_automator /SickBeard
 elif [[ -d /SickBeard/.git ]]; then
   echo '-----------------------'
-  echo '|  Updating Scripts    |'
+  echo '|  Updating Scripts'
   echo '-----------------------'
   cd /SickBeard || return
   git reset --hard origin/master
