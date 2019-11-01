@@ -24,3 +24,6 @@ jobs:
       
     - name: Login to registry 
       run: echo $TOKEN | docker login -u roxedus --password-stdin
+      
+    - name: Pushes the Docker mod
+      run: docker push ${DOCKER_REPO}
