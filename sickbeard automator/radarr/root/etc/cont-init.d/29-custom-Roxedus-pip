@@ -7,10 +7,9 @@ if [ ! -f /usr/bin/pip ]; then
   echo '------------------------------------------------------------------------'
   sed -i -- 's/#deb-src/deb-src/g' /etc/apt/sources.list && sed -i -- 's/# deb-src/deb-src/g' /etc/apt/sources.list
   apt-get update
-    apt-get install -y \
-      ffmpeg \
-      git \
-      python-pip
+  apt-get install -y \
+    git \
+    python-pip
   pip install --no-cache-dir -U \
     requests-cache \
     babelfish \
