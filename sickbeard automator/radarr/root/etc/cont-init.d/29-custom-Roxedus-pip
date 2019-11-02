@@ -5,9 +5,12 @@ if [ ! -f /usr/bin/pip ]; then
   echo '| Mod by Roxedus'
   echo '| Running installation of required modules for sickbeard_mp4_automator'
   echo '------------------------------------------------------------------------'
-  apk add --no-cache \
-    py2-pip \
-    git
+  sed -i -- 's/#deb-src/deb-src/g' /etc/apt/sources.list && sed -i -- 's/# deb-src/deb-src/g' /etc/apt/sources.list
+  apt-get update
+    apt-get install -y \
+      ffmpeg \
+      git \
+      python-pip
   pip install --no-cache-dir -U \
     requests-cache \
     babelfish \
@@ -15,4 +18,8 @@ if [ ! -f /usr/bin/pip ]; then
     'subliminal<2' \
     stevedore==1.19.1 \
     qtfaststart
+  rm -rf \
+    /tmp/* \
+    /var/lib/apt/lists/* \
+    /var/tmp/*
 fi
