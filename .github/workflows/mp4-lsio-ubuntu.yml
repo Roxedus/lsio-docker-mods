@@ -1,9 +1,9 @@
-name: Build Docker-mod for radarr
+name: Build Docker-mod for lsio-ubuntu
 
 on: 
   push:
     paths:
-    - 'sickbeard automator/radarr/**'
+    - 'sickbeard automator/lsio-ubuntu/**'
 
 jobs:
 
@@ -14,14 +14,14 @@ jobs:
     env:
       TOKEN: ${{ secrets.docker_token }}
       DOCKER_REPO: roxedus/lsio-docker-mods
-      APP: mp4-radarr 
+      APP: mp4-lsio-ubuntu
 
     
     steps:
     - uses: actions/checkout@v1
     - name: Build the Docker image
       run: |
-        cd "sickbeard automator/radarr"
+        cd "sickbeard automator/lsio-ubuntu"
         docker build . --file Dockerfile --tag ${DOCKER_REPO}:${APP}-$(date --utc +%Y-%m-%d_%H.%M) --tag ${DOCKER_REPO}:${APP}-latest
       
     - name: Login to registry 

@@ -1,9 +1,9 @@
-name: Build Docker-mod for nzbget
+name: Build Docker-mod for lsio-arch
 
 on: 
   push:
     paths:
-    - 'sickbeard automator/nzbget/**'
+    - 'sickbeard automator/lsio-arch/**'
 
 jobs:
 
@@ -14,14 +14,14 @@ jobs:
     env:
       TOKEN: ${{ secrets.docker_token }}
       DOCKER_REPO: roxedus/lsio-docker-mods
-      APP: mp4-nzbget 
+      APP: mp4-lsio-arch
 
     
     steps:
     - uses: actions/checkout@v1
     - name: Build the Docker image
       run: |
-        cd "sickbeard automator/nzbget"
+        cd "sickbeard automator/lsio-arch"
         docker build . --file Dockerfile --tag ${DOCKER_REPO}:${APP}-$(date --utc +%Y-%m-%d_%H.%M) --tag ${DOCKER_REPO}:${APP}-latest
       
     - name: Login to registry 
