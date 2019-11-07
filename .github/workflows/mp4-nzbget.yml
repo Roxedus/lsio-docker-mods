@@ -3,7 +3,7 @@ name: Build Docker-mod for nzbget
 on: 
   push:
     paths:
-    - 'sickbeard automator/nzbget/**'
+    - 'sickbeard automator/lsio-arch/**'
 
 jobs:
 
@@ -14,7 +14,7 @@ jobs:
     env:
       TOKEN: ${{ secrets.docker_token }}
       DOCKER_REPO: roxedus/lsio-docker-mods
-      APP: mp4-nzbget 
+      APP: mp4-lsio-arch
 
     
     steps:
