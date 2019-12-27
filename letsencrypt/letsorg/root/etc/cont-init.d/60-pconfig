@@ -21,7 +21,7 @@ if [[ -f /config/www/index.html ]]; then
     chown -R abc:abc /config/www
 else
     echo "[LetsOrg] Checking for Organizr updates..."
-    cd /config/www
+    cd /config/www || exit
     git pull
     echo "[LetsOrg] Checking permissions..."
     chown -R abc:abc /config/www
@@ -30,13 +30,13 @@ fi
 if [ ! -d "/tmp/organizr-ngxc" ]; then
     echo "[LetsOrg] Cloning organizr-ngxc plugin..."
     git clone https://github.com/vertig0ne/organizr-ngxc /tmp/organizr-ngxc
-    cd /tmp/organizr-ngxc
+    cd /tmp/organizr-ngxc || exit
     chmod +x install.sh
     echo "[LetsOrg] Installing plugin..."
     ./install.sh
 else
     echo "[LetsOrg] Updating organizr-ngxc plugin..."
-    cd /tmp/organizr-ngxc
+    cd /tmp/organizr-ngxc || exit
     git pull
     ./install.sh
 fi
