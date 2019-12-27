@@ -1,0 +1,44 @@
+#!/usr/bin/with-contenv bash
+
+echo "[LetsOrg] Starting..."
+if [ ! -d "/config/proxy" ]; then
+    mkdir /config/proxy
+    chmod 777 /config/proxy
+    chown abc:abc /config/proxy
+fi
+
+if [[ ! -f /config/ngxc.conf ]]; then
+    cp /defaults/ngxc.conf /config/
+    chown abc:abc /config/ngxc.conf
+fi
+
+if [[ -f /config/www/index.html ]]; then
+    echo "[LetsOrg] Cleaning Current WebRoot..."
+    rm -rf /config/www
+    echo "[LetsOrg] Cloning Organizr..."
+    git clone -b v2-develop https://github.com/causefx/Organizr /config/www/
+    echo "[LetsOrg] Checking permissions..."
+    chown -R abc:abc /config/www
+else
+    echo "[LetsOrg] Checking for Organizr updates..."
+    cd /config/www
+    git pull
+    echo "[LetsOrg] Checking permissions..."
+    chown -R abc:abc /config/www
+fi
+
+if [ ! -d "/tmp/organizr-ngxc" ]; then
+    echo "[LetsOrg] Cloning organizr-ngxc plugin..."
+    git clone https://github.com/vertig0ne/organizr-ngxc /tmp/organizr-ngxc
+    cd /tmp/organizr-ngxc
+    chmod +x install.sh
+    echo "[LetsOrg] Installing plugin..."
+    ./install.sh
+else
+    echo "[LetsOrg] Updating organizr-ngxc plugin..."
+    cd /tmp/organizr-ngxc
+    git pull
+    ./install.sh
+fi
+
+echo "[LetsOrg] Finished"
