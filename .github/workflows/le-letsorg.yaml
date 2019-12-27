@@ -1,7 +1,5 @@
 name: Build Docker-mod for le-letsorg
 
-on: [push]
-
 on: 
   push:
     paths:
