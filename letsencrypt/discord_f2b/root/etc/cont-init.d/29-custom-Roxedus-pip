@@ -1,6 +1,6 @@
 #!/usr/bin/with-contenv bash
 
-if [ ! -d /usr/lib/python3.8/site-packages/requests ]; then
+if [ ! -d /usr/lib/python3.8/site-packages/geoip2 ]; then
   echo '------------------------------------------------------------------------'
   echo '| Mod by Roxedus'
   echo '| Running installation of required modules for discord_f2b'
@@ -13,6 +13,7 @@ fi
 
 if [ ! -f /config/fail2ban/Fail2Ban.py ]; then
   cp /tmp/Fail2Ban.py /config/fail2ban/
+  cp /tmp/discordEmbed.conf /config/fail2ban/action.d
 fi
 
 test=$(python3 /config/fail2ban/Fail2Ban.py -a test)
