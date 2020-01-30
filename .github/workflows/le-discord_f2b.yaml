@@ -1,0 +1,32 @@
+name: Build Docker-mod for le-letsorg
+
+on: 
+  push:
+    paths:
+    - 'letsencrypt/discord_f2b/**'
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+    
+    env:
+      TOKEN: ${{ secrets.docker_token }}
+      DOCKER_REPO: roxedus/lsio-docker-mods
+      APP: le-discord_f2b
+      DIR: letsencrypt/discord_f2b
+
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: Build the Docker image
+      run: |
+        cd ${DIR}
+        docker build . --file Dockerfile --tag ${DOCKER_REPO}:${APP}-$(date --utc +%Y-%m-%d_%H.%M) --tag ${DOCKER_REPO}:${APP}-latest
+      
+    - name: Login to registry 
+      run: echo $TOKEN | docker login -u roxedus --password-stdin
+      
+    - name: Pushes the Docker mod
+      run: docker push ${DOCKER_REPO}
