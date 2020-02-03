@@ -5,13 +5,13 @@ Dockermod for Linuxserver.io's Letsencrypt container adding better Fail2Ban noti
 #### How to use:
 [In-depth guide](https://github.com/linuxserver/docker-mods#using-a-docker-mod) 
 
-Add this environment variable: 
+Add this environment variable:  
 ```-e DOCKER_MODS=roxedus/lsio-docker-mods:le-discord_f2b-latest```
 
-Environment variables used by this mod:
-```-e DISC_HOOK=40832456738934/7DcEpWr5V24OIEIELjg-KkHky86SrOgTqA```
 
 
+Environment variables used by this mod:  
+```-e DISC_HOOK=40832456738934/7DcEpWr5V24OIEIELjg-KkHky86SrOgTqA```  
 ```-e DISC_ME="120970603556503552```
 
 Add this action to your jail: `discordEmbed[bantime=24]`
