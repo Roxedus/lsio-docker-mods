@@ -14,11 +14,10 @@ fi
 if [ ! -f /config/fail2ban/Fail2Ban.py ]; then
   cp /tmp/Fail2Ban.py /config/fail2ban/
   cp /tmp/discordEmbed.conf /config/fail2ban/action.d
-fi
-
-test=$(python3 /config/fail2ban/Fail2Ban.py -a test)
-if [[ ${test} = 404 ]]; then
-  echo 'Notifier might not work'
-elif [[ ${test} = 204 ]]; then
-  echo 'Notifier works'
+  test=$(python3 /config/fail2ban/Fail2Ban.py -a test)
+  if [[ ${test} = 404 ]]; then
+    echo 'Notifier might not work'
+  elif [[ ${test} = 204 ]]; then
+    echo 'Notifier works'
+  fi
 fi
