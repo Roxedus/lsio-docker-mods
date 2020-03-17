@@ -1,6 +1,6 @@
 #!/usr/bin/with-contenv bash
 
-if [ ! -f /usr/bin/pip3 ]; then
+if [ ! -f /usr/bin/git ]; then
   echo '------------------------------------------------------------------------'
   echo '| Mod by Roxedus'
   echo '| Running installation of required modules for sickbeard_mp4_automator'
