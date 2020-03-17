@@ -8,15 +8,21 @@ if [ ! -f /usr/bin/pip ]; then
   sed -i -- 's/#deb-src/deb-src/g' /etc/apt/sources.list && sed -i -- 's/# deb-src/deb-src/g' /etc/apt/sources.list
   apt-get update
   apt-get install -y \
+    python3 \
     ffmpeg \
     git \
-    python-pip
-  pip install --no-cache-dir -U \
+    python3-pip
+  pip3 install --no-cache-dir -U \
+    requests \
+    requests[security] \
     requests-cache \
     babelfish \
-    'guessit<2' \
-    'subliminal<2' \
-    stevedore==1.19.1 \
+    tmdbsimple \
+    mutagen \
+    guessit \
+    subliminal \
+    python-dateutil \
+    stevedore \
     qtfaststart
   rm -rf \
     /tmp/* \

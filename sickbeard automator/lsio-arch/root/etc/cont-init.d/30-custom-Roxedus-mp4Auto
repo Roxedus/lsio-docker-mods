@@ -20,8 +20,18 @@ elif [[ -d /SickBeard/.git ]]; then
   git pull --rebase
 fi
 
+if [ -f /SickBeard/autoProcess.ini ]; then
+  echo '--------------------------------'
+  echo '| Moving files to new locations'
+  echo '| NEW FORMAT. PLEASE CONSULT THE WIKI ON THE NEW FORMAT'
+  echo '---------------------------------'
+  mkdir /SickBeard/config
+  mv /SickBeard/autoProcess.ini /SickBeard/config/autoProcess.ini
+  find . -name /SickBeard/\*.pyc -delete
+fi
+
 # Make files. (needed if you want to mount the logs in IE. logarr)
-touch /SickBeard/info.log
+touch /var/log/sma.log
 
 # Permissions
 chmod a+rwx -R /SickBeard

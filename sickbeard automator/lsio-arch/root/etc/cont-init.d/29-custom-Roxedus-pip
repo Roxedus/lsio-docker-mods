@@ -1,19 +1,24 @@
 #!/usr/bin/with-contenv bash
 
-if [ ! -f /usr/bin/pip ]; then
+if [ ! -f /usr/bin/pip3 ]; then
   echo '------------------------------------------------------------------------'
   echo '| Mod by Roxedus'
   echo '| Running installation of required modules for sickbeard_mp4_automator'
   echo '------------------------------------------------------------------------'
   apk add --no-cache \
-    py2-pip \
+    py3-pip \
     git \
     ffmpeg
-  pip install --no-cache-dir -U \
+  pip3 install --no-cache-dir -U \
+    requests \
+    requests[security] \
     requests-cache \
     babelfish \
-    'guessit<2' \
-    'subliminal<2' \
-    stevedore==1.19.1 \
+    tmdbsimple \
+    mutagen \
+    guessit \
+    subliminal \
+    python-dateutil \
+    stevedore \
     qtfaststart
 fi
