@@ -8,7 +8,11 @@ if [ ! -f /usr/bin/git ]; then
   apk add --no-cache \
     py3-pip \
     git \
+    gcc \
+    musl-dev \
+    python3-dev \
     ffmpeg
+  pip3 install --upgrade pip setuptools wheel
   pip3 install --no-cache-dir -U \
     requests \
     requests[security] \
