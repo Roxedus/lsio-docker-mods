@@ -31,7 +31,7 @@ if [ -f /SickBeard/autoProcess.ini ]; then
 fi
 
 # Make files. (needed if you want to mount the logs in IE. logarr)
-touch /var/log/sma.log
+touch /SickBeard/sma.log
 
 # Permissions
 chmod a+rwx -R /SickBeard
