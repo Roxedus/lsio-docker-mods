@@ -6,10 +6,12 @@ import geoip2.database
 import os
 import requests
 
+api = os.getenv('DISC_API', "40832456738934/7DcEpWr5V24OIEIELjg-KkHky86SrOgTqA") # If not setting enviroment variables, edit this
+
 class Discord:
     def __init__(self, data, action):
         self.base = "https://discordapp.com/api/webhooks/"
-        self.token = os.getenv('DISC_HOOK', "40832456738934/7DcEpWr5V24OIEIELjg-KkHky86SrOgTqA") # If not setting enviroment variables, edit this
+        self.token = os.getenv('DISC_HOOK', "") # If not setting enviroment variables, edit this
         self.you = os.getenv('DISC_ME', "120970603556503552") # If not setting enviroment variables, edit this
         self.data = data
         self.action = action
@@ -76,7 +78,7 @@ class Helpers:
 
 
     def map(self):
-        img_params={"center":f"{self.data['lat']},{self.data['lon']}", "size":"500,300", "key": "pJQIPWg0SGxCZnA9BEFkCn2quNmAMz9A"}
+        img_params={"center":f"{self.data['lat']},{self.data['lon']}", "size":"500,300", "key": api}
         img_r = requests.get('https://www.mapquestapi.com/staticmap/v5/map', params=img_params)
         self.data["map-img"] = img_r.url
         url_params={"center":f"{self.data['lat']},{self.data['lon']}", "size":"500,300"}
