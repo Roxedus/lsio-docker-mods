@@ -6,7 +6,7 @@ import geoip2.database
 import os
 import requests
 
-api = os.getenv('DISC_API', "40832456738934/7DcEpWr5V24OIEIELjg-KkHky86SrOgTqA") # If not setting enviroment variables, edit this
+api = os.getenv('DISC_API', "pJQIPWg0SGxCZnA9BEFkCn2quNmAMz9A") # If not setting enviroment variables, edit this
 
 class Discord:
     def __init__(self, data, action):
