@@ -60,7 +60,7 @@ class Discord:
 class Helpers:
     def __init__(self, ip):
         self.data = {"ip": ip}
-        self.map_api = os.getenv('DISC_API', "pJQIPWg0SGxCZnA9BEFkCn2quNmAMz9A") # If not setting enviroment variables, edit this
+        self.map_api = os.getenv('DISC_API', "") # If not setting enviroment variables, edit this
         self.reader = geoip2.database.Reader('/config/geoip2db/GeoLite2-City.mmdb')
         self.f2b()
         self.map()
