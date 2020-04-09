@@ -6,15 +6,13 @@ import geoip2.database
 import os
 import requests
 
-api = os.getenv('DISC_API', "pJQIPWg0SGxCZnA9BEFkCn2quNmAMz9A") # If not setting enviroment variables, edit this
-
 class Discord:
     def __init__(self, data, action):
+        self.action = action
         self.base = "https://discordapp.com/api/webhooks/"
+        self.data = data
         self.token = os.getenv('DISC_HOOK', "") # If not setting enviroment variables, edit this
         self.you = os.getenv('DISC_ME', "120970603556503552") # If not setting enviroment variables, edit this
-        self.data = data
-        self.action = action
 
     def create_payload(self):
         webhook = {
@@ -58,18 +56,17 @@ class Discord:
 
     def send(self, payload):
         r = requests.post(url=f"{self.base}{self.token}", json=payload)
-        print (r.status_code)
 
 class Helpers:
     def __init__(self, ip):
-        self.reader = geoip2.database.Reader('/config/geoip2db/GeoLite2-City.mmdb')
-        self.ip = ip
         self.data = {"ip": ip}
+        self.map_api = os.getenv('DISC_API', "pJQIPWg0SGxCZnA9BEFkCn2quNmAMz9A") # If not setting enviroment variables, edit this
+        self.reader = geoip2.database.Reader('/config/geoip2db/GeoLite2-City.mmdb')
         self.f2b()
         self.map()
 
     def f2b(self):
-        r = self.reader.city(self.ip)
+        r = self.reader.city(self.data['ip'])
         self.data["iso"] = r.country.iso_code
         self.data["name"] = r.country.name
         self.data["city"] = r.city.name
@@ -81,6 +78,7 @@ class Helpers:
         img_params={"center":f"{self.data['lat']},{self.data['lon']}", "size":"500,300", "key": api}
         img_r = requests.get('https://www.mapquestapi.com/staticmap/v5/map', params=img_params)
         self.data["map-img"] = img_r.url
+        print(img_r.url)
         url_params={"center":f"{self.data['lat']},{self.data['lon']}", "size":"500,300"}
         url_r = requests.get('https://mapquest.com/', params=url_params)
         self.data["map-url"] = url_r.url
