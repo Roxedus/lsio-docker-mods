@@ -75,7 +75,7 @@ class Helpers:
 
 
     def map(self):
-        img_params={"center":f"{self.data['lat']},{self.data['lon']}", "size":"500,300", "key": api}
+        img_params={"center":f"{self.data['lat']},{self.data['lon']}", "size":"500,300", "key": self.map_api}
         img_r = requests.get('https://www.mapquestapi.com/staticmap/v5/map', params=img_params)
         self.data["map-img"] = img_r.url
         url_params={"center":f"{self.data['lat']},{self.data['lon']}", "size":"500,300"}
