@@ -78,7 +78,6 @@ class Helpers:
         img_params={"center":f"{self.data['lat']},{self.data['lon']}", "size":"500,300", "key": api}
         img_r = requests.get('https://www.mapquestapi.com/staticmap/v5/map', params=img_params)
         self.data["map-img"] = img_r.url
-        print(img_r.url)
         url_params={"center":f"{self.data['lat']},{self.data['lon']}", "size":"500,300"}
         url_r = requests.get('https://mapquest.com/', params=url_params)
         self.data["map-url"] = url_r.url
