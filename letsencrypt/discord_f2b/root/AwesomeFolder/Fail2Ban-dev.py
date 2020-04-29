@@ -96,6 +96,8 @@ class Discord(object):
                     "color": 16194076
                 }
                 try:
+                    embed["description"] = f"**{self.ip}** got banned for `{int(self.time)}` hours after `{self.fails}` tries"
+                except ValueError:
                     time = datetime.fromtimestamp(float(self.time),
                                                   tz=pytz.timezone(os.getenv('TZ'))
                                                   ).strftime('%Y-%m-%d %H:%M:%S %Z%z')
