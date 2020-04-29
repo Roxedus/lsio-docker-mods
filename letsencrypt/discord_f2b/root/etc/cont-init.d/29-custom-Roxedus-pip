@@ -6,8 +6,6 @@ if [ ! -d /usr/lib/python3.8/site-packages/geoip2 ]; then
   echo '| Running installation of required modules for discord_f2b'
   echo '------------------------------------------------------------------------'
   pip3 install --no-cache-dir -U \
-    requests \
-    argparse \
     geoip2
 fi
 

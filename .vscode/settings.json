@@ -1,0 +1,13 @@
+{
+    "python.pythonPath": "C:\\py381\\python.exe",
+    "python.formatting.autopep8Args": [
+        "--max-line-length=120"
+    ],
+    "[python]": {
+        "editor.rulers": [
+            120
+        ],
+    },
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true,
+}
