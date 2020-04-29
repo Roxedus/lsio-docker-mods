@@ -75,6 +75,8 @@ class Discord(object):
                 }
             ]
         }
+        if isinstance(str, self.user):
+            webhook["content"] = self.user
         if "ban" in self.action:
             if has_geo:
                 embed = {
