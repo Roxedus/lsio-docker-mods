@@ -24,14 +24,16 @@ class Logger(object):
         self.logger = logging.getLogger("DiscordEmbed")
         self.logger.setLevel(self.log_level)
 
-        log_formatter = logging.Formatter('%(asctime)s : %(levelname)s : %(module)s : %(message)s', '%Y-%m-%d %H:%M:%S')
+        log_formatter = logging.Formatter(
+            '%(asctime)s : %(levelname)s : %(module)s : %(message)s', '%Y-%m-%d %H:%M:%S')
 
         if folder:
             self.log_dir = self.folder + '/DiscordEmbed.log'
 
             if not os.path.isdir(self.folder):
                 os.makedirs(self.folder)
-                self.logger.debug("Creating logging directory: %s" % self.folder)
+                self.logger.debug(
+                    "Creating logging directory: %s" % self.folder)
             self.logger.debug("Logging directory: %s" % self.log_dir)
             file_handler = logging.handlers.RotatingFileHandler(self.log_dir, mode='a',
                                                                 maxBytes=5000, encoding="UTF-8", delay=0, backupCount=5)
@@ -60,9 +62,11 @@ class Discord(object):
         if has_geo:
             self.geodata = helper.geodata()
             try:
-                self.map_url, self.map_img = helper.map(self.geodata["lon"], self.geodata["lat"])
+                self.map_url, self.map_img = helper.map(
+                    self.geodata["lon"], self.geodata["lat"])
             except ValueError:
-                self.map_url = helper.map(self.geodata["lon"], self.geodata["lat"])
+                self.map_url = helper.map(
+                    self.geodata["lon"], self.geodata["lat"])
 
     def create_payload(self):
         webhook = {
@@ -75,7 +79,7 @@ class Discord(object):
                 }
             ]
         }
-        if isinstance(str, self.user):
+        if isinstance(self.user, str):
             webhook["content"] = self.user
         if "ban" in self.action:
             if has_geo:
@@ -91,8 +95,10 @@ class Discord(object):
             if self.map_img:
                 embed["image"] = {"url": f"{self.map_img}"}
             if self.action == "ban":
-                embed["fields"].append({"name": "Map", "value": f"[Link]({self.map_url})"})
-                embed["fields"].append({"name": "Unban cmd", "value": f"```bash\nfail2ban-client unban {self.ip}```"})
+                embed["fields"].append(
+                    {"name": "Map", "value": f"[Link]({self.map_url})"})
+                embed["fields"].append(
+                    {"name": "Unban cmd", "value": f"```bash\nfail2ban-client unban {self.ip}```"})
                 ban_embed = {
                     "title": f"New ban on `{self.jail}`",
                     "color": 16194076
@@ -101,7 +107,8 @@ class Discord(object):
                     embed["description"] = f"**{self.ip}** got banned for `{int(self.time)}` hours after `{self.fails}` tries"
                 except ValueError:
                     time = datetime.fromtimestamp(float(self.time),
-                                                  tz=pytz.timezone(os.getenv('TZ'))
+                                                  tz=pytz.timezone(
+                                                      os.getenv('TZ'))
                                                   ).strftime('%Y-%m-%d %H:%M:%S %Z%z')
                     embed["description"] = f"**{self.ip}** got banned for `{self.fails}` failed attempts, unbanning at `{time}`"
                 except ValueError:
@@ -147,13 +154,19 @@ class Helpers(object):
 
         if self.private:
             has_geo = False
-            logger.warning('%s is a local ip, continuing without geodata' % self.ip)
+            logger.warning(
+                '%s is a local ip, continuing without geodata' % self.ip)
 
         try:
             self.reader = geoip2.database.Reader(self.geoipDB)
         except FileNotFoundError:
             has_geo = False
-            logger.warning('GeoIP database not found in %s, continuing without geodata' % self.geoipDB)
+            logger.warning(
+                'GeoIP database not found in %s, continuing without geodata' % self.geoipDB)
+        except AddressNotFoundError:
+            has_geo = False
+            logger.warning(
+                'GeoIP did not find a location for %s, continuing without geodata' % self.ip)
         except Exception as e:
             logger.error('FATAL ERROR: %s' % e)
 
@@ -170,8 +183,10 @@ class Helpers(object):
         url_r = s.get('https://mapquest.com/', params=url_params).url
 
         try:
-            img_params = {"center": f"{lat},{lon}", "size": "500,300", "key": self.map_key}
-            img_r = s.get('https://www.mapquestapi.com/staticmap/v5/map', params=img_params)
+            img_params = {"center": f"{lat},{lon}",
+                          "size": "500,300", "key": self.map_key}
+            img_r = s.get(
+                'https://www.mapquestapi.com/staticmap/v5/map', params=img_params)
             assert img_r.status_code == 200
             return url_r, img_r.url
         except AssertionError:
@@ -181,17 +196,22 @@ class Helpers(object):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Discord notifier for F2B')
-    parser.add_argument('-a', '--action', help="Which F2B action triggered the script", required=True)
-    parser.add_argument('-d', '--db', help="Location to geoip database", default='/config/geoip2db/GeoLite2-City.mmdb')
+    parser.add_argument(
+        '-a', '--action', help="Which F2B action triggered the script", required=True)
+    parser.add_argument('-d', '--db', help="Location to geoip database",
+                        default='/config/geoip2db/GeoLite2-City.mmdb')
     parser.add_argument('-f', '--fail', help="Amount of attempts done")
-    parser.add_argument('-g', '--log-dir', help="Folder to store the action log.")
+    parser.add_argument('-g', '--log-dir',
+                        help="Folder to store the action log.")
     parser.add_argument('-w', '--hook', help="Discord hook to use.")
-    parser.add_argument('-i', '--ip', help="Ip which triggered the action", default="1.1.1.1")
+    parser.add_argument(
+        '-i', '--ip', help="Ip which triggered the action", default="1.1.1.1")
     parser.add_argument('-j', '--jail', help="jail which triggered the action")
     parser.add_argument('-l', '--level', help="Sets the level of what is logged", default="info",
                         choices=["critical", "error", "warning", "info", "debug"])
     parser.add_argument('-m', '--map-key', help="API key for mapquest")
-    parser.add_argument('-u', '--user', help="Discord user, if it is a id, it will tag")
+    parser.add_argument(
+        '-u', '--user', help="Discord user, if it is a id, it will tag")
     parser.add_argument('-t', '--time', help="The time the action is valid")
 
     args = parser.parse_args()
