@@ -3,9 +3,9 @@
 
 build_config() {
     sed -i "s#https:\/\/localhost#${XBB_URL}#g" /app/xbb/config.php
-    sed -i "s#realpath(__DIR__).'/resources/database/xbackbone.db'#'${XBB_DB_PATH:-\"/config/mods/xbb/resources/database/xbackbone.db\"}'#g" /app/xbb/config.php
-    sed -i "s#realpath(__DIR__).'/storage'#'${XBB_STORAGE_PATH:-\"/config/mods/xbb/storage\"}'#g" /app/xbb/config.php
-    sed -i "s#return\ \[#&\n\ \ \ \ \'app_name\' => \'${XBB_NAME:-\"XbackBone\"}\',#" /app/xbb/config.php
+    sed -i "s#realpath(__DIR__).'/resources/database/xbackbone.db'#'${XBB_DB_PATH:-/config/mods/xbb/resources/database/xbackbone.db}'#g" /app/xbb/config.php
+    sed -i "s#realpath(__DIR__).'/storage'#'${XBB_STORAGE_PATH:-/config/mods/xbb/storage}'#g" /app/xbb/config.php
+    sed -i "s#return\ \[#&\n\ \ \ \ \'app_name\' => \'${XBB_NAME:-XbackBone}\',#" /app/xbb/config.php
 }
 
 create_folders() {
@@ -69,35 +69,38 @@ get_ver() {
 }
 
 get_zip() {
-    echo "**** install xbb ****"
     curl -o  /tmp/xbackbone.zip -L "https://github.com/SergiX44/XBackBone/releases/download/${XBB_RELEASE}/release-v${XBB_RELEASE}.zip"
     unzip -q -o /tmp/xbackbone.zip -d /app/xbb/
     echo "${XBB_RELEASE}" > /config/mods/xbb/storage/.release
     rm /tmp/xbackbone.zip
 }
 
-
-echo '------------------------------------------------------------------------'
-echo '| Mod by Roxedus'
-echo '| Running installation of XBackBone'
-echo '------------------------------------------------------------------------'
+z() {
+    echo '------------------------------------------------------------------------'
+    echo '| Mod by Roxedus'
+    echo "| Running $1 of XBackBone"
+    echo '------------------------------------------------------------------------'
+}
 
 #get_prereq
 create_folders
 get_ver
-if [ ! -f "/app/xbb/.release" ]; then
+if [ -f "/app/xbb/.release" ]; then
+    z "installation"
     create_links
     build_config
     do_install
     do_migration
     mv /app/xbb/.release /config/mods/xbb/storage/.release
 elif [ ! -f "/app/xbb/index.php" ]; then
+    z "installation"
     get_zip
     create_links
     build_config
     do_install
     do_migration
 elif [ ! "${XBB_RELEASE}" == "$(cat /config/mods/xbb/storage/.release)" ]; then
+    z "update"
     get_zip
     create_links
     build_config
@@ -106,5 +109,5 @@ fi
 fix_perms
 
 if [ ! -f /config/nginx/site-confs/xbb.conf ]; then
-  cp nginx/xbackbone/root/defaults/xbb.conf /config/nginx/site-confs/
+  cp /defaults/xbb.conf /config/nginx/site-confs/
 fi

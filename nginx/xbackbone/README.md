@@ -7,7 +7,7 @@ Dockermod for Linuxserver.io's Nginx container adding xbackbone.
 ### How to use
 
 To enable this mod, add this environment variable:
-```-e DOCKER_MODS=roxedus/lsio-docker-mods:nginx-xbb-latest```
+```-e DOCKER_MODS=roxedus/lsio-docker-mods:nginx-xbackbone-latest```
 
 Environment variables used by this mod:
 
