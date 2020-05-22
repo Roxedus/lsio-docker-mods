@@ -64,7 +64,7 @@ get_prereq() {
 
 get_ver() {
     if [ -z ${XBB_RELEASE+x} ]; then
-        XBB_RELEASE=$(curl -sX GET "https://api.github.com/repos/SergiX44/XBackBone/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]');
+        XBB_RELEASE=$(curl -sX GET "https://api.github.com/repos/SergiX44/XBackBone/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]')
     fi
 }
 
