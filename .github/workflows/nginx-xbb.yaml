@@ -3,7 +3,7 @@ name: Build Docker-mod for xbackbone
 on:
   push:
     paths:
-      - "letsencrypt/discord_f2b/**"
+      - "nginx/xbackbone/**"
       - ".github/workflows/nginx-xbb.yaml"
 
 jobs:
