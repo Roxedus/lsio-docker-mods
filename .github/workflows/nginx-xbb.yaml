@@ -1,9 +1,10 @@
-name: Build Docker-mod for discord_f2b
+name: Build Docker-mod for xbackbone
 
 on:
   push:
     paths:
       - "letsencrypt/discord_f2b/**"
+      - ".github/workflows/nginx-xbb.yaml"
 
 jobs:
   build:
@@ -12,15 +13,15 @@ jobs:
     env:
       TOKEN: ${{ secrets.docker_token }}
       DOCKER_REPO: roxedus/lsio-docker-mods
-      APP: le-discord_f2b
-      DIR: letsencrypt/discord_f2b
+      APP: nginx-xbackbone
+      DIR: nginx/xbackbone
 
     steps:
       - uses: actions/checkout@v1
       - name: Build the Docker image
         run: |
           cd ${DIR}
-          docker build . --file Dockerfile --tag ${DOCKER_REPO}:${APP}-$(date --utc +%Y-%m-%d_%H.%M) --tag ${DOCKER_REPO}:${APP}-latest
+          docker build . --file Dockerfile --tag ${DOCKER_REPO}:${APP}-$(curl -sX GET "https://api.github.com/repos/SergiX44/XBackBone/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]') --tag ${DOCKER_REPO}:${APP}-$(date --utc +%Y-%m-%d_%H.%M) --tag ${DOCKER_REPO}:${APP}-latest
 
       - name: Login to registry
         run: echo $TOKEN | docker login -u roxedus --password-stdin

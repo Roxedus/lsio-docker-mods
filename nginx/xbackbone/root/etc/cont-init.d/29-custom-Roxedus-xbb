@@ -1,0 +1,110 @@
+#!/usr/bin/with-contenv bash
+# shellcheck shell=bash
+
+build_config() {
+    sed -i "s#https:\/\/localhost#${XBB_URL}#g" /app/xbb/config.php
+    sed -i "s#realpath(__DIR__).'/resources/database/xbackbone.db'#'${XBB_DB_PATH:-\"/config/mods/xbb/resources/database/xbackbone.db\"}'#g" /app/xbb/config.php
+    sed -i "s#realpath(__DIR__).'/storage'#'${XBB_STORAGE_PATH:-\"/config/mods/xbb/storage\"}'#g" /app/xbb/config.php
+    sed -i "s#return\ \[#&\n\ \ \ \ \'app_name\' => \'${XBB_NAME:-\"XbackBone\"}\',#" /app/xbb/config.php
+}
+
+create_folders() {
+    mkdir -p \
+        /app/xbb \
+        /config/mods/xbb/{storage,resources/database,logs,config}
+}
+
+create_links() {
+    if [ ! -f /config/mods/xbb/config/config.php ]; then
+        mv /app/xbb/config.example.php /config/mods/xbb/config/config.php
+        ln -s /config/mods/xbb/config/config.php /app/xbb/config.php
+    else
+        if [ -f /app/xbb/config.example.php ]; then
+            mv /app/xbb/config.example.php /config/mods/xbb/config/config-newversion.php
+        fi
+        if [ ! -f /app/xbb/config.php ]; then
+            ln -s /config/mods/xbb/config/config.php /app/xbb/config.php
+        fi
+    fi
+    if [[ ! -L "/app/xbb/logs" ]]; then
+        rmdir /app/xbb/logs
+        ln -s /config/mods/xbb/logs/ /app/xbb/
+    fi
+}
+
+do_install() {
+    php /app/xbb/bin/migrate --install
+    #rm -rf /app/xbb/install
+}
+
+do_migration() {
+    php /app/xbb/bin/migrate
+    php /app/xbb/bin/clean
+}
+
+fix_perms() {
+    chown -R abc:abc \
+        /app/xbb \
+        /config/mods/xbb
+    chmod -R 777 \
+        /app/xbb \
+        /config/mods/xbb
+}
+
+get_prereq() {
+    apk add --no-cache --virtual=xbb-deps \
+    php7-sqlite3 \
+    php7-mysqli \
+    php7-gd \
+    php7-json \
+    php7-intl \
+    php7-fileinfo \
+    php7-zip
+}
+
+get_ver() {
+    if [ -z ${XBB_RELEASE+x} ]; then
+        XBB_RELEASE=$(curl -sX GET "https://api.github.com/repos/SergiX44/XBackBone/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]');
+    fi
+}
+
+get_zip() {
+    echo "**** install xbb ****"
+    curl -o  /tmp/xbackbone.zip -L "https://github.com/SergiX44/XBackBone/releases/download/${XBB_RELEASE}/release-v${XBB_RELEASE}.zip"
+    unzip -q -o /tmp/xbackbone.zip -d /app/xbb/
+    echo "${XBB_RELEASE}" > /config/mods/xbb/storage/.release
+    rm /tmp/xbackbone.zip
+}
+
+
+echo '------------------------------------------------------------------------'
+echo '| Mod by Roxedus'
+echo '| Running installation of XBackBone'
+echo '------------------------------------------------------------------------'
+
+#get_prereq
+create_folders
+get_ver
+if [ ! -f "/app/xbb/.release" ]; then
+    create_links
+    build_config
+    do_install
+    do_migration
+    mv /app/xbb/.release /config/mods/xbb/storage/.release
+elif [ ! -f "/app/xbb/index.php" ]; then
+    get_zip
+    create_links
+    build_config
+    do_install
+    do_migration
+elif [ ! "${XBB_RELEASE}" == "$(cat /config/mods/xbb/storage/.release)" ]; then
+    get_zip
+    create_links
+    build_config
+    do_migration
+fi
+fix_perms
+
+if [ ! -f /config/nginx/site-confs/xbb.conf ]; then
+  cp nginx/xbackbone/root/defaults/xbb.conf /config/nginx/site-confs/
+fi
