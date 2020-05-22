@@ -21,6 +21,10 @@ jobs:
       - name: Build the Docker image
         run: |
           cd ${DIR}
+          docker build . --file Dockerfile.build --tag bin-stage
+          docker create --name bin bin-stage
+          mkdir -p root/app
+          docker cp bin:/app/xbb root/app/xbb
           docker build . --file Dockerfile --tag ${DOCKER_REPO}:${APP}-$(curl -sX GET "https://api.github.com/repos/SergiX44/XBackBone/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]') --tag ${DOCKER_REPO}:${APP}-$(date --utc +%Y-%m-%d_%H.%M) --tag ${DOCKER_REPO}:${APP}-latest
 
       - name: Login to registry
