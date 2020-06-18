@@ -1,22 +1,26 @@
 #!/usr/bin/env python3
+"""
+Script to send webhooks from fail2ban actions
+"""
 import argparse
-import collections
 import ipaddress
 import logging
 import logging.handlers
 import os
-import sys
 from datetime import datetime
 
 import pytz
 import requests
+from geoip2 import database, errors
 
-import geoip2.database
-
-has_geo = True
+HAS_GEO = True
 
 
-class Logger(object):
+class Logger():
+    """
+    Logging object to aid in troubleshooting
+    """
+
     def __init__(self, folder, level):
         self.folder = folder
         self.log_level = level.upper()
@@ -33,8 +37,8 @@ class Logger(object):
             if not os.path.isdir(self.folder):
                 os.makedirs(self.folder)
                 self.logger.debug(
-                    "Creating logging directory: %s" % self.folder)
-            self.logger.debug("Logging directory: %s" % self.log_dir)
+                    "Creating logging directory: %s", self.folder)
+            self.logger.debug("Logging directory: %s", self.log_dir)
             file_handler = logging.handlers.RotatingFileHandler(self.log_dir, mode='a',
                                                                 maxBytes=5000, encoding="UTF-8", delay=0, backupCount=5)
             file_handler.setLevel(self.log_level)
@@ -48,9 +52,13 @@ class Logger(object):
         self.logger.addHandler(console_handler)
 
 
-class Discord(object):
+class Discord():
+    """
+    Object used to build, and send the webhook
+    """
+
     def __init__(self, **kwargs):
-        self.discord_url = "https://discordapp.com/api/webhooks/"
+        self.discord_url = "https://discord.com/api/webhooks/"
         self.hook_user = "Fail2Ban"
         self.action = kwargs.get("action")
         self.fails = kwargs.get("fails")
@@ -59,7 +67,7 @@ class Discord(object):
         self.jail = kwargs.get("jail")
         self.time = kwargs.get("time")
         self.user = kwargs.get("user")
-        if has_geo:
+        if HAS_GEO:
             self.geodata = helper.geodata()
             try:
                 self.map_url, self.map_img = helper.map(
@@ -69,6 +77,10 @@ class Discord(object):
                     self.geodata["lon"], self.geodata["lat"])
 
     def create_payload(self):
+        """
+        Creates the payload
+        """
+
         webhook = {
             "username": self.hook_user,
             "content": f"<@{self.user}>",
@@ -82,7 +94,7 @@ class Discord(object):
         if isinstance(self.user, str):
             webhook["content"] = self.user
         if "ban" in self.action:
-            if has_geo:
+            if HAS_GEO:
                 embed = {
                     "url": f"https://db-ip.com/{self.ip}",
                     "fields": [
@@ -104,15 +116,16 @@ class Discord(object):
                     "color": 16194076
                 }
                 try:
-                    embed["description"] = f"**{self.ip}** got banned for `{int(self.time)}` hours after `{self.fails}` tries"
+                    embed["description"] = f"**{self.ip}** got banned for `{int(self.time)}` hours " \
+                                           f"after `{self.fails}` tries"
                 except ValueError:
-                    time = datetime.fromtimestamp(float(self.time),
-                                                  tz=pytz.timezone(
-                                                      os.getenv('TZ'))
-                                                  ).strftime('%Y-%m-%d %H:%M:%S %Z%z')
-                    embed["description"] = f"**{self.ip}** got banned for `{self.fails}` failed attempts, unbanning at `{time}`"
-                except ValueError:
-                    embed["description"] = f"**{self.ip}** got banned for `{self.time}` after `{self.fails}` tries"
+                    try:
+                        time = datetime.fromtimestamp(float(self.time), tz=pytz.timezone(
+                            os.getenv('TZ', 'UTC'))).strftime('%Y-%m-%d %H:%M:%S %Z%z')
+                        embed["description"] = f"**{self.ip}** got banned for `{self.fails}` " \
+                            f"failed attempts, unbanning at `{time}`"
+                    except ValueError:
+                        embed["description"] = f"**{self.ip}** got banned for `{self.time}` after `{self.fails}` tries"
                 embed.update(ban_embed)
             elif self.action == "unban":
                 unban_embed = {
@@ -132,20 +145,28 @@ class Discord(object):
             webhook["embeds"][0]["color"] = 16194076
         elif self.action == "test":
             webhook["content"] = ""
-            webhook["embeds"][0]["description"] = f"I am working"
+            webhook["embeds"][0]["description"] = "I am working"
             webhook["embeds"][0]["color"] = 845872
         else:
             return None
-        logger.debug('Webhook: %s' % webhook)
+        logger.debug('Webhook: %s', webhook)
         return webhook
 
     def send(self, payload):
-        logger.debug('Payload: %s' % payload)
+        """
+        Sends the payload
+        """
+
+        logger.debug('Payload: %s', payload)
         r = requests.post(url=f"{self.discord_url}{self.hook}", json=payload)
-        logger.info('Sent webhook, Status: %s' % r.status_code)
+        logger.info('Sent webhook, Status: %s', r.status_code)
 
 
-class Helpers(object):
+class Helpers():
+    """
+    Object to do various conversions
+    """
+
     def __init__(self, **kwargs):
         self.geoipDB = kwargs.get('geoipDB')
         self.map_key = kwargs.get('map_key')
@@ -153,30 +174,36 @@ class Helpers(object):
         self.private = ipaddress.ip_address(self.ip).is_private
 
         if self.private:
-            has_geo = False
+            HAS_GEO = False
             logger.warning(
-                '%s is a local ip, continuing without geodata' % self.ip)
+                '%s is a local ip, continuing without geodata', self.ip)
 
         try:
-            self.reader = geoip2.database.Reader(self.geoipDB)
+            self.reader = database.Reader(self.geoipDB)
         except FileNotFoundError:
-            has_geo = False
+            HAS_GEO = False
             logger.warning(
-                'GeoIP database not found in %s, continuing without geodata' % self.geoipDB)
-        except AddressNotFoundError:
-            has_geo = False
+                'GeoIP database not found in %s, continuing without geodata', self.geoipDB)
+        except errors.AddressNotFoundError:
+            HAS_GEO = False
             logger.warning(
-                'GeoIP did not find a location for %s, continuing without geodata' % self.ip)
+                'GeoIP did not find a location for %s, continuing without geodata', self.ip)
         except Exception as e:
-            logger.error('FATAL ERROR: %s' % e)
+            logger.error('FATAL ERROR: %s', e)
 
     def geodata(self):
+        """
+        Creates a dict based on the ip
+        """
         r = self.reader.city(self.ip)
         return {'iso': r.country.iso_code, "name": r.country.name,
                 "city": r.city.name, "lat": r.location.latitude,
                 "lon": r.location.longitude}
 
     def map(self, lon, lat):
+        """
+        Fetches a static map url based on lon and lat
+        """
         s = requests.Session()
 
         url_params = {"center": f"{lat},{lon}", "size": "500,300"}
@@ -228,5 +255,5 @@ if __name__ == "__main__":
     disc = Discord(action=args.action, fails=args.fail, hook=args.hook,
                    ip=args.ip, jail=args.jail, time=args.time, user=args.user)
 
-    if (payload:= disc.create_payload()):
+    if payload := disc.create_payload():
         disc.send(payload)

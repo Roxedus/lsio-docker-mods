@@ -7,6 +7,7 @@ if [ ! -d /usr/lib/python3.8/site-packages/geoip2 ]; then
   echo '------------------------------------------------------------------------'
   pip3 install --no-cache-dir -U \
     geoip2
+    pytz
 fi
 
 if [ ! -f /config/fail2ban/Fail2Ban.py ]; then
