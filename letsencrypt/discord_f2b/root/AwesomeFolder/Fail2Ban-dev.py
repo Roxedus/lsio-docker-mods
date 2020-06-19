@@ -83,7 +83,7 @@ class Discord():
 
         webhook = {
             "username": self.hook_user,
-            "content": f"<@{self.user}>",
+            "content": f"{self.user}",
             "embeds": [
                 {
                     "author": {"name": self.hook_user},
@@ -91,8 +91,10 @@ class Discord():
                 }
             ]
         }
-        if isinstance(self.user, str):
-            webhook["content"] = self.user
+        try:
+            webhook["content"] = f"<@{int(self.user)}>"
+        except ValueError:
+            pass
         if "ban" in self.action:
             if HAS_GEO:
                 embed = {
