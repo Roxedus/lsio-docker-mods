@@ -72,3 +72,7 @@ actionban = python3 /config/fail2ban/Fail2Ban.py -a ban -j <name> -i <ip> -t <ti
 ## Currently tested on
 
 linuxserver/letsencrypt
+
+## Example
+
+![Example picture](.assets/Example.png)1
