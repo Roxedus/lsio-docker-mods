@@ -6,7 +6,7 @@
 
 Dockermod for Linuxserver.io's Letsencrypt container adding better Fail2Ban notifications for discord.
 
-#### How to use
+### How to use
 
 To enable this mod, add this environment variable:
 ```-e DOCKER_MODS=roxedus/lsio-docker-mods:le-discord_f2b-latest```
@@ -24,13 +24,13 @@ Environment variables used by this mod:
 Arguments you can send to the action:
 
 ```bash
-usage: Fail2Ban-dev.py [-h] -a ACTION [-d DB] [-f FAIL] [-g LOG_DIR] [-w HOOK] [-i IP] [-j JAIL] [-l {critical,error,warning,info,debug}] [-m MAP_KEY] [-u USER] [-t TIME]
+usage: Fail2Ban-dev.py [-h] -a {unban,ban,start,stop,test} [-d DB] [-f FAIL] [-g LOG_DIR] [-w HOOK] [-i IP] [-j JAIL] [-l {critical,error,warning,info,debug}] [-m MAP_KEY] [-u USER] [-t TIME]
 
 Discord notifier for F2B
 
 optional arguments:
   -h, --help            show this help message and exit
-  -a ACTION, --action ACTION
+  -a {unban,ban,start,stop,test}, --action {unban,ban,start,stop,test}
                         Which F2B action triggered the script
   -d DB, --db DB        Location to geoip database
   -f FAIL, --fail FAIL  Amount of attempts done
@@ -51,7 +51,7 @@ Arguments **override** enviroment variables. This means you can define annother 
 
 | __Argument__ | __Description__ |
 | --- | :--- |
-|`Action` | Hopefully self-explainatory, this is how the script determines if it got triggered on unban, ban, startup or shutdown. Requierd|
+|`Action` | Hopefully self-explainatory. **Required**|
 |`DB` | Pass this variable with the action if your geolite database is not located as `/config/geoip2db/GeoLite2-City.mmdb`.|
 |`FAIL` | This is only cosmetic, it lists the ammounts of fail-attempts invoking the ban.|
 |`LOG_DIR` | You dont need this unless you are debugging.|

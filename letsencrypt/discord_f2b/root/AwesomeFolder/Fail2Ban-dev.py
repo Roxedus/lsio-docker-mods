@@ -225,8 +225,8 @@ class Helpers():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Discord notifier for F2B')
-    parser.add_argument(
-        '-a', '--action', help="Which F2B action triggered the script", required=True)
+    parser.add_argument('-a', '--action', help="Which F2B action triggered the script", required=True,
+                        choices=["unban", "ban", "start", "stop", "test"])
     parser.add_argument('-d', '--db', help="Location to geoip database",
                         default='/config/geoip2db/GeoLite2-City.mmdb')
     parser.add_argument('-f', '--fail', help="Amount of attempts done")
