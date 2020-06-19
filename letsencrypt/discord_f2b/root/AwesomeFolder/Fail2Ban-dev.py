@@ -114,9 +114,11 @@ class Discord():
                 embed["fields"].append(
                     {"name": "Unban cmd", "value": f"```bash\nfail2ban-client unban {self.ip}```"})
                 ban_embed = {
-                    "title": f"New ban on `{self.jail}`",
+                    "title": f"New ban",
                     "color": 16194076
                 }
+                if self.jail:
+                    ban_embed["title"] = ban_embed["title"] + f" on `{self.jail}`"
                 try:
                     embed["description"] = f"**{self.ip}** got banned for `{int(self.time)}` hours " \
                                            f"after `{self.fails}` tries"
