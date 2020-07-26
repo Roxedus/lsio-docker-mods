@@ -1,99 +1,263 @@
 #!/usr/bin/env python3
+"""
+Script to send webhooks from fail2ban actions
+"""
 import argparse
-import collections
-import datetime
-import geoip2.database
+import ipaddress
+import logging
+import logging.handlers
 import os
+from datetime import datetime
+
+import pytz
 import requests
+from geoip2 import database, errors
+
+HAS_GEO = True
 
 
-class Discord:
-    def __init__(self, data, action):
-        self.action = action
-        self.base = "https://discordapp.com/api/webhooks/"
-        self.data = data
-        self.token = os.getenv('DISC_HOOK', "")  # If not setting enviroment variables, edit this
-        self.you = os.getenv('DISC_ME', "120970603556503552")  # If not setting enviroment variables, edit this
+class Logger():
+    """
+    Logging object to aid in troubleshooting
+    """
+
+    def __init__(self, folder, level):
+        self.folder = folder
+        self.log_level = level.upper()
+
+        self.logger = logging.getLogger("DiscordEmbed")
+        self.logger.setLevel(self.log_level)
+
+        log_formatter = logging.Formatter(
+            '%(asctime)s : %(levelname)s : %(module)s : %(message)s', '%Y-%m-%d %H:%M:%S')
+
+        if folder:
+            self.log_dir = self.folder + '/DiscordEmbed.log'
+
+            if not os.path.isdir(self.folder):
+                os.makedirs(self.folder)
+                self.logger.debug(
+                    "Creating logging directory: %s", self.folder)
+            self.logger.debug("Logging directory: %s", self.log_dir)
+            file_handler = logging.handlers.RotatingFileHandler(self.log_dir, mode='a',
+                                                                maxBytes=5000, encoding="UTF-8", delay=0, backupCount=5)
+            file_handler.setLevel(self.log_level)
+            file_handler.setFormatter(log_formatter)
+            self.logger.addHandler(file_handler)
+
+        console_handler = logging.StreamHandler()
+        console_handler.setFormatter(log_formatter)
+        console_handler.setLevel(self.log_level)
+
+        self.logger.addHandler(console_handler)
+
+
+class Discord():
+    """
+    Object used to build, and send the webhook
+    """
+
+    def __init__(self, **kwargs):
+        self.discord_url = "https://discord.com/api/webhooks/"
+        self.hook_user = "Fail2Ban"
+        self.action = kwargs.get("action")
+        self.fails = kwargs.get("fails")
+        self.hook = kwargs.get("hook")
+        self.ip = kwargs.get("ip")
+        self.jail = kwargs.get("jail")
+        self.time = kwargs.get("time")
+        self.user = kwargs.get("user")
+        if HAS_GEO:
+            self.geodata = helper.geodata()
+            try:
+                self.map_url, self.map_img = helper.map(
+                    self.geodata["lon"], self.geodata["lat"])
+            except ValueError:
+                self.map_url = helper.map(
+                    self.geodata["lon"], self.geodata["lat"])
 
     def create_payload(self):
+        """
+        Creates the payload
+        """
+
         webhook = {
-            "username": "Fail2Ban",
-            "content": f"<@{self.you}>",
-            "embeds": [{}]
+            "username": self.hook_user,
+            "content": f"{self.user}",
+            "embeds": [
+                {
+                    "author": {"name": self.hook_user},
+                    "timestamp": f"{datetime.utcnow()}"
+                }
+            ]
         }
-        webhook["embeds"][0]["author"] = {"name": "Fail2Ban"}
-        webhook["embeds"][0]["timestamp"] = f"{datetime.datetime.utcnow()}"
-        if "ban" in self.action.action:
-            webhook["embeds"][0]["url"] = f"https://db-ip.com/{self.data['ip']}"
-            webhook["embeds"][0]["image"] = {"url": f"{self.data['map-img']}"}
-            webhook["embeds"][0]["fields"] = [{}]
-            webhook["embeds"][0]["fields"][0]["name"] = f":flag_{self.data['iso'].lower()}:"
-            webhook["embeds"][0]["fields"][0]["value"] = self.data["city"] or self.data["name"]
-            if self.action.action == "ban":
-                webhook["embeds"][0]["fields"].append({"name": f"Map", "value": f"[Link]({self.data['map-url']})"})
-                webhook["embeds"][0]["fields"].append(
-                    {"name": f"Unban cmd", "value": f"fail2ban-client unban {self.data['ip']}"})
-                webhook["embeds"][0]["title"] = f"New ban on `{self.action.jail}`"
-                webhook["embeds"][0]["description"] = f"**{self.data['ip']}** got banned for `{self.action.time}` hours after `{self.action.fail}` tries"
-                webhook["embeds"][0]["color"] = 16194076
-            elif self.action.action == "unban":
-                webhook["embeds"][0]["title"] = f"Revoked ban on `{self.action.jail}`"
-                webhook["embeds"][0]["description"] = f"**{self.data['ip']}** is now unbanned"
-                webhook["embeds"][0]["color"] = 845872
-        elif self.action.action == "start":
+        try:
+            webhook["content"] = f"<@{int(self.user)}>"
+        except ValueError:
+            pass
+        if "ban" in self.action:
+            if HAS_GEO:
+                embed = {
+                    "url": f"https://db-ip.com/{self.ip}",
+                    "fields": [
+                        {
+                            "name": f":flag_{self.geodata['iso'].lower()}:",
+                            "value": self.geodata["city"] or self.geodata["name"]
+                        }
+                    ]
+                }
+            if self.map_img:
+                embed["image"] = {"url": f"{self.map_img}"}
+            if self.action == "ban":
+                embed["fields"].append(
+                    {"name": "Map", "value": f"[Link]({self.map_url})"})
+                embed["fields"].append(
+                    {"name": "Unban cmd", "value": f"```bash\nfail2ban-client unban {self.ip}```"})
+                ban_embed = {
+                    "title": f"New ban",
+                    "color": 16194076
+                }
+                if self.jail:
+                    ban_embed["title"] = ban_embed["title"] + f" on `{self.jail}`"
+                try:
+                    embed["description"] = f"**{self.ip}** got banned for `{int(self.time)}` hours " \
+                                           f"after `{self.fails}` tries"
+                except ValueError:
+                    try:
+                        time = datetime.fromtimestamp(float(self.time), tz=pytz.timezone(
+                            os.getenv('TZ', 'UTC'))).strftime('%Y-%m-%d %H:%M:%S %Z%z')
+                        embed["description"] = f"**{self.ip}** got banned for `{self.fails}` " \
+                            f"failed attempts, unbanning at `{time}`"
+                    except ValueError:
+                        embed["description"] = f"**{self.ip}** got banned for `{self.time}` after `{self.fails}` tries"
+                embed.update(ban_embed)
+            elif self.action == "unban":
+                unban_embed = {
+                    "title": f"Revoked ban on `{self.jail}`",
+                    "description": f"**{self.ip}** is now unbanned",
+                    "color": 845872
+                }
+                embed.update(unban_embed)
+            webhook["embeds"][0].update(embed)
+        elif self.action == "start":
             webhook["content"] = ""
-            webhook["embeds"][0]["description"] = f"Started `{self.action.jail}`"
+            webhook["embeds"][0]["description"] = f"Started `{self.jail}`"
             webhook["embeds"][0]["color"] = 845872
-        elif self.action.action == "stopped":
+        elif self.action == "stopped":
             webhook["content"] = ""
-            webhook["embeds"][0]["description"] = f"Stopped `{self.action.jail}`"
+            webhook["embeds"][0]["description"] = f"Stopped `{self.jail}`"
             webhook["embeds"][0]["color"] = 16194076
-        elif self.action.action == "test":
+        elif self.action == "test":
             webhook["content"] = ""
-            webhook["embeds"][0]["description"] = f"I am working"
+            webhook["embeds"][0]["description"] = "I am working"
             webhook["embeds"][0]["color"] = 845872
         else:
             return None
+        logger.debug('Webhook: %s', webhook)
         return webhook
 
     def send(self, payload):
-        r = requests.post(url=f"{self.base}{self.token}", json=payload)
+        """
+        Sends the payload
+        """
+
+        logger.debug('Payload: %s', payload)
+        r = requests.post(url=f"{self.discord_url}{self.hook}", json=payload)
+        logger.info('Sent webhook, Status: %s', r.status_code)
 
 
-class Helpers:
-    def __init__(self, ip):
-        self.data = {"ip": ip}
-        self.map_api = os.getenv('DISC_API', "")  # If not setting enviroment variables, edit this
-        self.reader = geoip2.database.Reader('/config/geoip2db/GeoLite2-City.mmdb')
+class Helpers():
+    """
+    Object to do various conversions
+    """
 
-    def f2b(self):
-        r = self.reader.city(self.data['ip'])
-        self.data["iso"] = r.country.iso_code
-        self.data["name"] = r.country.name
-        self.data["city"] = r.city.name
-        self.data["lat"] = r.location.latitude
-        self.data["lon"] = r.location.longitude
+    def __init__(self, **kwargs):
+        self.geoipDB = kwargs.get('geoipDB')
+        self.map_key = kwargs.get('map_key')
+        self.ip = kwargs.get('ip')
+        self.private = ipaddress.ip_address(self.ip).is_private
 
-    def map(self):
-        img_params = {"center": f"{self.data['lat']},{self.data['lon']}", "size": "500,300", "key": self.map_api}
-        img_r = requests.get('https://www.mapquestapi.com/staticmap/v5/map', params=img_params)
-        self.data["map-img"] = img_r.url
-        url_params = {"center": f"{self.data['lat']},{self.data['lon']}", "size": "500,300"}
-        url_r = requests.get('https://mapquest.com/', params=url_params)
-        self.data["map-url"] = url_r.url
+        if self.private:
+            HAS_GEO = False
+            logger.warning(
+                '%s is a local ip, continuing without geodata', self.ip)
+
+        try:
+            self.reader = database.Reader(self.geoipDB)
+        except FileNotFoundError:
+            HAS_GEO = False
+            logger.warning(
+                'GeoIP database not found in %s, continuing without geodata', self.geoipDB)
+        except errors.AddressNotFoundError:
+            HAS_GEO = False
+            logger.warning(
+                'GeoIP did not find a location for %s, continuing without geodata', self.ip)
+        except Exception as e:
+            logger.error('FATAL ERROR: %s', e)
+
+    def geodata(self):
+        """
+        Creates a dict based on the ip
+        """
+        r = self.reader.city(self.ip)
+        return {'iso': r.country.iso_code, "name": r.country.name,
+                "city": r.city.name, "lat": r.location.latitude,
+                "lon": r.location.longitude}
+
+    def map(self, lon, lat):
+        """
+        Fetches a static map url based on lon and lat
+        """
+        s = requests.Session()
+
+        url_params = {"center": f"{lat},{lon}", "size": "500,300"}
+        url_r = s.get('https://mapquest.com/', params=url_params).url
+
+        try:
+            img_params = {"center": f"{lat},{lon}",
+                          "size": "500,300", "key": self.map_key}
+            img_r = s.get(
+                'https://www.mapquestapi.com/staticmap/v5/map', params=img_params)
+            assert img_r.status_code == 200
+            return url_r, img_r.url
+        except AssertionError:
+            logger.warning('Map api not found')
+            return url_r
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Discord notifier for F2B')
-    parser.add_argument('-a', '--action', help="Which F2B action triggered the script", required=True)
-    parser.add_argument('-i', '--ip', help="ip which triggered the action", default="1.1.1.1")
-    parser.add_argument('-j', '--jail', help="jail which triggered the action")
-    parser.add_argument('-t', '--time', help="The time the action is valid")
+    parser.add_argument('-a', '--action', help="Which F2B action triggered the script", required=True,
+                        choices=["unban", "ban", "start", "stop", "test"])
+    parser.add_argument('-d', '--db', help="Location to geoip database",
+                        default='/config/geoip2db/GeoLite2-City.mmdb')
     parser.add_argument('-f', '--fail', help="Amount of attempts done")
+    parser.add_argument('-g', '--log-dir',
+                        help="Folder to store the action log.")
+    parser.add_argument('-w', '--hook', help="Discord hook to use.")
+    parser.add_argument(
+        '-i', '--ip', help="Ip which triggered the action", default="1.1.1.1")
+    parser.add_argument('-j', '--jail', help="jail which triggered the action")
+    parser.add_argument('-l', '--level', help="Sets the level of what is logged", default="info",
+                        choices=["critical", "error", "warning", "info", "debug"])
+    parser.add_argument('-m', '--map-key', help="API key for mapquest")
+    parser.add_argument(
+        '-u', '--user', help="Discord user, if it is a id, it will tag")
+    parser.add_argument('-t', '--time', help="The time the action is valid")
 
     args = parser.parse_args()
 
-    data = Helpers(args.ip).data
-    disc = Discord(data, args)
-    if (payload:= disc.create_payload()):
+    if not args.map_key:
+        args.map_key = os.getenv('DISC_API')
+    if not args.hook:
+        args.hook = os.getenv('DISC_HOOK')
+    if not args.user:
+        args.user = os.getenv('DISC_ME')
+
+    logger = Logger(folder=args.log_dir, level=args.level).logger
+    helper = Helpers(geoipDB=args.db, map_key=args.map_key, ip=args.ip)
+    disc = Discord(action=args.action, fails=args.fail, hook=args.hook,
+                   ip=args.ip, jail=args.jail, time=args.time, user=args.user)
+
+    if payload := disc.create_payload():
         disc.send(payload)
