@@ -6,8 +6,8 @@ if [ ! -d /usr/lib/python3.8/site-packages/geoip2 ]; then
   echo '| Running installation of required modules for discord_f2b'
   echo '------------------------------------------------------------------------'
   pip3 install --no-cache-dir -U \
-    geoip2==3.0.0
-  pytz
+    geoip2==3.0.0 \
+    pytz
 fi
 
 if [ ! -f /config/fail2ban/Fail2Ban.py ]; then
