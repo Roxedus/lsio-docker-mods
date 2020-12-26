@@ -11,7 +11,8 @@ if [ ! -f /usr/bin/git ]; then
     gcc \
     musl-dev \
     python3-dev \
-    libffi \
+    libffi-dev \
+    openssl-dev \
     ffmpeg
   pip3 install --upgrade pip setuptools wheel
   pip3 install --no-cache-dir -U \
