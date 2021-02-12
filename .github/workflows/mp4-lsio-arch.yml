@@ -1,31 +1,28 @@
 name: Build Docker-mod for lsio-arch
 
-on: 
+on:
   push:
     paths:
-    - 'sickbeard automator/lsio-arch/**'
+      - "sickbeard automator/lsio-arch/**"
 
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
-    
+
     env:
       TOKEN: ${{ secrets.docker_token }}
       DOCKER_REPO: roxedus/lsio-docker-mods
       APP: mp4-lsio-arch
 
-    
     steps:
-    - uses: actions/checkout@v1
-    - name: Build the Docker image
-      run: |
-        cd "sickbeard automator/lsio-arch"
-        docker build . --file Dockerfile --tag ${DOCKER_REPO}:${APP}-$(date --utc +%Y-%m-%d_%H.%M) --tag ${DOCKER_REPO}:${APP}-latest
-      
-    - name: Login to registry 
-      run: echo $TOKEN | docker login -u roxedus --password-stdin
-      
-    - name: Pushes the Docker mod
-      run: docker push ${DOCKER_REPO}
+      - uses: actions/checkout@v1
+      - name: Build the Docker image
+        run: |
+          cd "sickbeard automator/lsio-arch"
+          docker build . --file Dockerfile --tag ${DOCKER_REPO}:${APP}-$(date --utc +%Y-%m-%d_%H.%M) --tag ${DOCKER_REPO}:${APP}-latest
+
+      - name: Login to registry
+        run: echo $TOKEN | docker login -u roxedus --password-stdin
+
+      - name: Pushes the Docker mod
+        run: docker push -a ${DOCKER_REPO}

@@ -6,27 +6,17 @@ if [ ! -f /usr/bin/git ]; then
   echo '| Running installation of required modules for sickbeard_mp4_automator'
   echo '------------------------------------------------------------------------'
   apk add --no-cache \
-    py3-pip \
-    git \
+    cargo \
+    ffmpeg \
     gcc \
-    musl-dev \
-    python3-dev \
-    libmediainfo \
+    git \
     libffi-dev \
+    libmediainfo \
+    musl-dev \
     openssl-dev \
-    ffmpeg
+    py3-cffi \
+    py3-pip \
+    python3-dev
   pip3 install --upgrade pip setuptools wheel
-  pip3 install --no-cache-dir -U \
-    requests \
-    requests[security] \
-    requests-cache \
-    babelfish \
-    tmdbsimple \
-    mutagen \
-    guessit \
-    subliminal \
-    python-dateutil \
-    stevedore \
-    pymediainfo \
-    qtfaststart
+  pip3 install --no-cache-dir -U -r https://raw.githubusercontent.com/mdhiggins/sickbeard_mp4_automator/master/setup/requirements.txt
 fi
