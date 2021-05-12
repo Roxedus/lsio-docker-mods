@@ -28,9 +28,9 @@ jobs:
       - name: Login and push to registry
         run: |
           echo $TOKEN | docker login -u roxedus --password-stdin
-          docker push ${DOCKER_REPO}
+          docker push -a ${DOCKER_REPO}
 
       - name: Login and push to github registry
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u roxedus --password-stdin
-          docker push ghcr.io/${DOCKER_REPO}
+          docker push -a ghcr.io/${DOCKER_REPO}
