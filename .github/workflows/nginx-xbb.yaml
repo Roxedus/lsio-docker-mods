@@ -21,14 +21,22 @@ jobs:
       - name: Build the Docker image
         run: |
           cd ${DIR}
+          REL=$(curl -sX GET "https://api.github.com/repos/SergiX44/XBackBone/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]')
+          DATE=$(date --utc +%Y-%m-%d_%H.%M)
           docker build . --file Dockerfile.build --tag bin-stage
           docker create --name bin bin-stage
           mkdir -p root/app
           docker cp bin:/app/xbb root/app/xbb
-          docker build . --file Dockerfile --tag ${DOCKER_REPO}:${APP}-$(curl -sX GET "https://api.github.com/repos/SergiX44/XBackBone/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]') --tag ${DOCKER_REPO}:${APP}-$(date --utc +%Y-%m-%d_%H.%M) --tag ${DOCKER_REPO}:${APP}-latest
+          docker build . --file Dockerfile \
+            --tag ${DOCKER_REPO}:${APP}-${REL} --tag ${DOCKER_REPO}:${APP}-${DATE} --tag ${DOCKER_REPO}:${APP}-latest \
+            --tag ghcr.io/${DOCKER_REPO}:${APP}-${REL} --tag ghcr.io/${DOCKER_REPO}:${APP}-${DATE} ghcr.io/--tag ${DOCKER_REPO}:${APP}-latest
 
-      - name: Login to registry
-        run: echo $TOKEN | docker login -u roxedus --password-stdin
+      - name: Login and push to registry
+        run: |
+          echo $TOKEN | docker login -u roxedus --password-stdin
+          docker push ${DOCKER_REPO}
 
-      - name: Pushes the Docker mod
-        run: docker push ${DOCKER_REPO}
+      - name: Login and push to github registry
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u roxedus --password-stdin
+          docker push ghcr.io/${DOCKER_REPO}

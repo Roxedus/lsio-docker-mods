@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - "letsencrypt/discord_f2b/**"
+      - ".github/workflows/le-discord_f2b.yaml"
 
 jobs:
   build:
@@ -20,10 +21,16 @@ jobs:
       - name: Build the Docker image
         run: |
           cd ${DIR}
-          docker build . --file Dockerfile --tag ${DOCKER_REPO}:${APP}-$(date --utc +%Y-%m-%d_%H.%M) --tag ${DOCKER_REPO}:${APP}-latest
+          docker build . --file Dockerfile \
+            --tag ${DOCKER_REPO}:${APP}-$(date --utc +%Y-%m-%d_%H.%M) --tag ${DOCKER_REPO}:${APP}-latest \
+            --tag ghcr.io/${DOCKER_REPO}:${APP}-$(date --utc +%Y-%m-%d_%H.%M) --tag ghcr.io/${DOCKER_REPO}:${APP}-latest
 
-      - name: Login to registry
-        run: echo $TOKEN | docker login -u roxedus --password-stdin
+      - name: Login and push to registry
+        run: |
+          echo $TOKEN | docker login -u roxedus --password-stdin
+          docker push ${DOCKER_REPO}
 
-      - name: Pushes the Docker mod
-        run: docker push ${DOCKER_REPO}
+      - name: Login and push to github registry
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u roxedus --password-stdin
+          docker push ghcr.io/${DOCKER_REPO}
