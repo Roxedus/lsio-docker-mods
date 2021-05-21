@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - "sickbeard automator/lsio-arch/**"
+      - ".github/workflows/mp4-lsio-arch.yml"
 
 jobs:
   build:
@@ -19,10 +20,16 @@ jobs:
       - name: Build the Docker image
         run: |
           cd "sickbeard automator/lsio-arch"
-          docker build . --file Dockerfile --tag ${DOCKER_REPO}:${APP}-$(date --utc +%Y-%m-%d_%H.%M) --tag ${DOCKER_REPO}:${APP}-latest
+          docker build . --file Dockerfile \
+          --tag ${DOCKER_REPO}:${APP}-$(date --utc +%Y-%m-%d_%H.%M) --tag ${DOCKER_REPO}:${APP}-latest \
+          --tag ghcr.io/${DOCKER_REPO}:${APP}-$(date --utc +%Y-%m-%d_%H.%M) --tag ghcr.io/${DOCKER_REPO}:${APP}-latest
 
-      - name: Login to registry
-        run: echo $TOKEN | docker login -u roxedus --password-stdin
+      - name: Login and push to registry
+        run: |
+          echo $TOKEN | docker login -u roxedus --password-stdin
+          docker push -a ${DOCKER_REPO}
 
-      - name: Pushes the Docker mod
-        run: docker push -a ${DOCKER_REPO}
+      - name: Login and push to github registry
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u roxedus --password-stdin
+          docker push -a ghcr.io/${DOCKER_REPO}
