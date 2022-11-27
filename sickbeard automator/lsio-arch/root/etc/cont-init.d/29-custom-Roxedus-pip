@@ -1,6 +1,7 @@
 #!/usr/bin/with-contenv bash
+# shellcheck shell=bash
 
-if [ ! -f /usr/bin/git ]; then
+if [ ! -f /pip_deps ]; then
   echo '------------------------------------------------------------------------'
   echo '| Mod by Roxedus'
   echo '| Running installation of required modules for sickbeard_mp4_automator'
@@ -17,6 +18,7 @@ if [ ! -f /usr/bin/git ]; then
     py3-cffi \
     py3-pip \
     python3-dev
-  pip3 install --upgrade pip setuptools wheel
-  pip3 install --no-cache-dir -U -r https://raw.githubusercontent.com/mdhiggins/sickbeard_mp4_automator/master/setup/requirements.txt
+  pip3 install --no-cache-dir --upgrade pip setuptools wheel
+  pip3 install --no-cache-dir -U -r https://raw.githubusercontent.com/mdhiggins/sickbeard_mp4_automator/master/setup/requirements.txt --find-links https://wheel-index.linuxserver.io/alpine-3.16/
+  touch /pip_deps
 fi

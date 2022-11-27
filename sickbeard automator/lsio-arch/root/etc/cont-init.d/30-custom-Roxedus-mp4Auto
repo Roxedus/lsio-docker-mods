@@ -5,6 +5,8 @@ echo '| Mod by Roxedus'
 echo '| Getting latest scripts'
 echo '-------------------------'
 
+git config --global --add safe.directory /SickBeard
+
 # Clone sickbeard_mp4_automator repo
 if [[ ! -d /SickBeard/.git ]]; then
   echo '-----------------------'
@@ -38,4 +40,4 @@ chmod a+rwx -R /SickBeard
 
 # Set Permissions
 chown -R abc:abc \
-	/SickBeard
+  /SickBeard
