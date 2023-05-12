@@ -29,7 +29,7 @@ jobs:
           docker cp bin:/app/xbb root/app/xbb
           docker build . --file Dockerfile \
             --tag ${DOCKER_REPO}:${APP}-${REL} --tag ${DOCKER_REPO}:${APP}-${DATE} --tag ${DOCKER_REPO}:${APP}-latest \
-            --tag ghcr.io/${DOCKER_REPO^}:${APP}-${REL} --tag ghcr.io/${DOCKER_REPO^}:${APP}-${DATE} --tag ghcr.io/${DOCKER_REPO^}:${APP}-latest
+            --tag ghcr.io/${DOCKER_REPO}:${APP}-${REL} --tag ghcr.io/${DOCKER_REPO}:${APP}-${DATE} --tag ghcr.io/${DOCKER_REPO}:${APP}-latest
 
       - name: Login and push to registry
         run: |
@@ -39,4 +39,4 @@ jobs:
       - name: Login and push to github registry
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u roxedus --password-stdin
-          docker push -a ghcr.io/${DOCKER_REPO^}
+          docker push -a ghcr.io/${DOCKER_REPO}
