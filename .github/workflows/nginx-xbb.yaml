@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@v1
       - name: Build the Docker image
         run: |
-          cd ${DIR}
+          cd "${DIR}"
           REL=$(curl -sX GET "https://api.github.com/repos/SergiX44/XBackBone/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]')
           DATE=$(date --utc +%Y-%m-%d_%H.%M)
           docker build . --file Dockerfile.build --tag bin-stage
