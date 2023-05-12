@@ -1,6 +1,6 @@
 FROM scratch
 
-LABEL maitainer="Roxedus"
+LABEL maintainer="Roxedus"
 
 # copy local files
 COPY root/ /

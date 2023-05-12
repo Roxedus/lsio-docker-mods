@@ -14,15 +14,16 @@ jobs:
       TOKEN: ${{ secrets.docker_token }}
       DOCKER_REPO: roxedus/lsio-docker-mods
       APP: mp4-lsio-arch
+      DIR: sickbeard automator/lsio-arch
 
     steps:
       - uses: actions/checkout@v1
       - name: Build the Docker image
         run: |
-          cd "sickbeard automator/lsio-arch"
+          cd ${DIR}
           docker build . --file Dockerfile \
           --tag ${DOCKER_REPO}:${APP}-$(date --utc +%Y-%m-%d_%H.%M) --tag ${DOCKER_REPO}:${APP}-latest \
-          --tag ghcr.io/${DOCKER_REPO}:${APP}-$(date --utc +%Y-%m-%d_%H.%M) --tag ghcr.io/${DOCKER_REPO}:${APP}-latest
+          --tag ghcr.io/${DOCKER_REPO^}:${APP}-$(date --utc +%Y-%m-%d_%H.%M) --tag ghcr.io/${DOCKER_REPO^}:${APP}-latest
 
       - name: Login and push to registry
         run: |
@@ -32,4 +33,4 @@ jobs:
       - name: Login and push to github registry
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u roxedus --password-stdin
-          docker push -a ghcr.io/${DOCKER_REPO}
+          docker push -a ghcr.io/${DOCKER_REPO^}
