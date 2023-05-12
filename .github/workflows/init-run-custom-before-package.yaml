@@ -22,8 +22,12 @@ jobs:
           cd ${DIR}
           docker build . --file Dockerfile --tag ${DOCKER_REPO}:${APP}-$(date --utc +%Y-%m-%d_%H.%M) --tag ${DOCKER_REPO}:${APP}-latest
 
-      - name: Login to registry
-        run: echo $TOKEN | docker login -u roxedus --password-stdin
+      - name: Login and push to registry
+        run: |
+          echo $TOKEN | docker login -u roxedus --password-stdin
+          docker push -a ${DOCKER_REPO}
 
-      - name: Pushes the Docker mod
-        run: docker push ${DOCKER_REPO}
+      - name: Login and push to github registry
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u roxedus --password-stdin
+          docker push -a ghcr.io/${DOCKER_REPO}
