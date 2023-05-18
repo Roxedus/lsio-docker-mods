@@ -6,6 +6,8 @@ echo '| Mod by Roxedus'
 echo '| Getting latest scripts'
 echo '-------------------------'
 
+apk add git
+
 git config --global --add safe.directory /SickBeard
 
 # Clone sickbeard_mp4_automator repo
