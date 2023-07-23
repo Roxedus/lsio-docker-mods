@@ -21,7 +21,7 @@ jobs:
       - name: Build the Docker image
         run: |
           cd "${DIR}"
-          docker build . --file Dockerfile \
+          DOCKER_BUILDKIT=1 docker build . --file Dockerfile \
           --tag ${DOCKER_REPO}:${APP}-$(date --utc +%Y-%m-%d_%H.%M) --tag ${DOCKER_REPO}:${APP}-latest \
           --tag ghcr.io/${DOCKER_REPO}:${APP}-$(date --utc +%Y-%m-%d_%H.%M) --tag ghcr.io/${DOCKER_REPO}:${APP}-latest
 
