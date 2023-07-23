@@ -1,0 +1,8 @@
+#!/usr/bin/with-contenv bash
+# shellcheck shell=bash
+
+if [[ ! "${HOMEBREW_INSTALL_COMPILERS}" = "false" ]]; then
+
+    echo "\
+        build-essential" >> /mod-repo-packages-to-install.list
+fi

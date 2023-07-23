@@ -1,0 +1,27 @@
+#!/usr/bin/with-contenv bash
+# shellcheck shell=bash
+
+export NONINTERACTIVE=1
+
+brew_dirs=(
+    "/home/linuxbrew/.linuxbrew"
+    "${HOME}/.cache/Homebrew"
+)
+
+if [ -f "/home/linuxbrew/.linuxbrew/bin/brew" ]; then
+    echo "**** Homebrew is already installed. You can update it via \"brew update\" in terminal. ****"
+elif [ ! -f "/home/linuxbrew/.linuxbrew/bin/brew" ]; then
+    echo "**** Installing Homebrew. ****"
+    for i in "${brew_dirs[@]}";do
+        mkdir -p "${i}"
+        lsiown abc:abc "${i}"
+    done
+    s6-setuidgid abc bash /mod-artifacts/brew.sh
+    if [[ ! "${HOMEBREW_INSTALL_COMPILERS}" = "false" ]]; then
+        s6-setuidgid abc bash -c "/home/linuxbrew/.linuxbrew/bin/brew install gcc"
+    fi
+fi
+
+if ! findmnt -n /home/linuxbrew ; then
+    echo "/home/linuxbrew might not be mounted, resulting in non-persistent packages"
+fi
